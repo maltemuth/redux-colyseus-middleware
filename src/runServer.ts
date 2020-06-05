@@ -1,20 +1,27 @@
 import http from "http";
 import express from "express";
 import cors from "cors";
-import { Server } from "colyseus";
-import { createStore } from "redux";
+import { Server, Room } from "colyseus";
 import createConnectedRoomHandler, {
   StoreFactory,
 } from "./createConnectedRoomHandler";
 
+export type ConnectedRoomOptions = {
+  [roomName: string]: { factory: StoreFactory; options?: any };
+};
+
+export type RoomOptions = {
+  [roomName: string]: { handler: { new (): Room }; options?: any };
+};
+
 const runServer = ({
   port,
-  connectedRoomName = "redux",
-  storeFactory = () => createStore((_ = {}) => _),
+  connectedRooms,
+  rooms = {},
 }: {
   port: number;
-  connectedRoomName?: string;
-  storeFactory?: StoreFactory;
+  connectedRooms: ConnectedRoomOptions;
+  rooms?: RoomOptions;
 }): (() => Promise<void>) => {
   const app = express();
 
@@ -26,10 +33,21 @@ const runServer = ({
     server,
   });
 
-  gameServer.define(
-    connectedRoomName,
-    createConnectedRoomHandler(storeFactory)
-  );
+  Object.keys(connectedRooms).forEach((roomName) => {
+    const { factory, options } = connectedRooms[roomName];
+
+    gameServer.define(
+      roomName,
+      createConnectedRoomHandler(factory),
+      options || {}
+    );
+  });
+
+  Object.keys(rooms).forEach((roomName) => {
+    const { handler, options } = rooms[roomName];
+
+    gameServer.define(roomName, handler, options || {});
+  });
 
   gameServer.listen(port);
 

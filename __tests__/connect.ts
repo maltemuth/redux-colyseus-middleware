@@ -1,27 +1,34 @@
 import runServer from "../src/runServer";
 import createClient from "../src/client";
 import { Client as ColyseusClient } from "colyseus.js";
+import { createStore } from "redux";
+
+const exampleStoreFactory = () => createStore(() => ({}));
+const testRoomName = "redux";
 
 test("connect to a server", (done) => {
   const stopServer = runServer({
     port: 12567,
-    connectedRoomName: "redux",
+    connectedRooms: { [testRoomName]: { factory: exampleStoreFactory } },
   });
   const colyseusClient = new ColyseusClient("ws://localhost:12567");
   const client = createClient(colyseusClient);
 
-  client.connect("redux").then(() => {
+  client.connect(testRoomName).then(() => {
     expect(client.isConnected()).toBe(true);
     stopServer().then(done);
   });
 });
 
 test("disconnect from a server", async (done) => {
-  const stopServer = runServer({ port: 12678 });
+  const stopServer = runServer({
+    port: 12678,
+    connectedRooms: { [testRoomName]: { factory: exampleStoreFactory } },
+  });
   const colyseusClient = new ColyseusClient("ws://localhost:12678");
   const client = createClient(colyseusClient);
 
-  await client.connect("redux");
+  await client.connect(testRoomName);
   expect(client.isConnected()).toBe(true);
 
   await client.disconnect();
@@ -32,11 +39,14 @@ test("disconnect from a server", async (done) => {
 });
 
 test("disconnect when the server dies", async (done) => {
-  const stopServer = runServer({ port: 12679 });
+  const stopServer = runServer({
+    port: 12679,
+    connectedRooms: { [testRoomName]: { factory: exampleStoreFactory } },
+  });
   const colyseusClient = new ColyseusClient("ws://localhost:12679");
   const client = createClient(colyseusClient);
 
-  await client.connect("redux");
+  await client.connect(testRoomName);
   expect(client.isConnected()).toBe(true);
 
   await stopServer();

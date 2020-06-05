@@ -19,7 +19,10 @@ beforeAll(async (done) => {
   const colyseusClient = new ColyseusClient("ws://localhost:22567");
   const client = createClient(colyseusClient);
   store = createConnectedStore(client, (_ = {}) => _);
-  stopServer = runServer({ port: 22567, storeFactory: createExampleStore });
+  stopServer = runServer({
+    port: 22567,
+    connectedRooms: { redux: { factory: createExampleStore } },
+  });
   await client.connect("redux");
   setTimeout(done, 100);
 });
