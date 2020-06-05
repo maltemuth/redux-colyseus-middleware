@@ -1,7 +1,7 @@
 import createConnectedStore, {
   REMOTE_STATE_UPDATE,
 } from "../src/createConnectedStore";
-import createClient from "../src/client";
+import createClient from "../src/createClient";
 import { Client as ColyseusClient } from "colyseus.js";
 import runServer from "../src/runServer";
 import { Store, createStore } from "redux";

@@ -6,8 +6,11 @@ import {
   Store,
   Action,
   AnyAction,
+  // this is needed for tsc, although it is not used
+  Dispatch,
 } from "redux";
-import { Client } from "./client";
+
+import { Client } from "./createClient";
 
 export const REMOTE_STATE_UPDATE = "REMOTE_STATE_UPDATE";
 

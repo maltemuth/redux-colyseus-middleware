@@ -1,5 +1,5 @@
 import runServer from "../src/runServer";
-import createClient from "../src/client";
+import createClient from "../src/createClient";
 import { Client as ColyseusClient } from "colyseus.js";
 import { createStore } from "redux";
 

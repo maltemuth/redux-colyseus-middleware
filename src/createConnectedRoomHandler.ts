@@ -6,7 +6,7 @@ export type StoreFactory<
   ActionType extends Action<any> = AnyAction
 > = () => Store<StateModel, ActionType>;
 
-export abstract class ConnectedRoom<
+export class ConnectedRoom<
   StateModel = any,
   ActionType extends Action<any> = AnyAction
 > extends Room<StateModel> {
@@ -29,7 +29,7 @@ export abstract class ConnectedRoom<
 
 const createConnectedRoomHandler = <StateModel, ActionType extends Action<any>>(
   storeFactory: StoreFactory<StateModel, ActionType>
-) =>
+): { new (): ConnectedRoom<StateModel, ActionType> } =>
   class extends ConnectedRoom<StateModel, ActionType> {
     public createStore = storeFactory;
   };

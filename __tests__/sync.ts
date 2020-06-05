@@ -2,7 +2,7 @@ import { createStore } from "redux";
 import runServer from "../src/runServer";
 import { Client as ColyseusClient } from "colyseus.js";
 import createConnectedStore from "../src/createConnectedStore";
-import createClient from "../src/client";
+import createClient from "../src/createClient";
 
 const factory = () =>
   createStore((state = {}, action) => {
