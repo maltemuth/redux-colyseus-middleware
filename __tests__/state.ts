@@ -3,23 +3,29 @@ import createConnectedStore, {
 } from "../src/createConnectedStore";
 import createClient from "../src/client";
 import { Client as ColyseusClient } from "colyseus.js";
-import runServer from "./service/runServer";
-import { Store } from "redux";
+import runServer from "../src/runServer";
+import { Store, createStore } from "redux";
 
 let stopServer: () => Promise<void>;
 let store: Store;
+const createExampleStore = () =>
+  createStore((state = { initial: "example" }, action) => {
+    if ((action as { payload?: any }).payload)
+      return (action as { payload?: any }).payload;
+    return state;
+  });
 
 beforeAll(async (done) => {
-  stopServer = runServer(22567);
   const colyseusClient = new ColyseusClient("ws://localhost:22567");
   const client = createClient(colyseusClient);
   store = createConnectedStore(client, (_ = {}) => _);
+  stopServer = runServer({ port: 22567, storeFactory: createExampleStore });
   await client.connect("redux");
-  done();
+  setTimeout(done, 100);
 });
 
-test("initial state is empty", () => {
-  expect(store.getState()).toEqual({});
+test("initial state is synchronized after joining", () => {
+  expect(store.getState()).toEqual({ initial: "example" });
 });
 
 test("action changes state", (done) => {

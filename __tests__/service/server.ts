@@ -1,6 +1,3 @@
-import runServer from "./runServer";
+import runServer from "../../src/runServer";
 
-runServer(
-  parseInt(process.env.PORT || "2567", 10),
-  !!process.env.USE_MONITOR || false
-);
+runServer({ port: parseInt(process.env.PORT || "2567", 10) });

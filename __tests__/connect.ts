@@ -1,9 +1,12 @@
-import runServer from "./service/runServer";
+import runServer from "../src/runServer";
 import createClient from "../src/client";
 import { Client as ColyseusClient } from "colyseus.js";
 
 test("connect to a server", (done) => {
-  const stopServer = runServer(12567);
+  const stopServer = runServer({
+    port: 12567,
+    connectedRoomName: "redux",
+  });
   const colyseusClient = new ColyseusClient("ws://localhost:12567");
   const client = createClient(colyseusClient);
 
@@ -14,7 +17,7 @@ test("connect to a server", (done) => {
 });
 
 test("disconnect from a server", async (done) => {
-  const stopServer = runServer(12678);
+  const stopServer = runServer({ port: 12678 });
   const colyseusClient = new ColyseusClient("ws://localhost:12678");
   const client = createClient(colyseusClient);
 
@@ -29,7 +32,7 @@ test("disconnect from a server", async (done) => {
 });
 
 test("disconnect when the server dies", async (done) => {
-  const stopServer = runServer(12679);
+  const stopServer = runServer({ port: 12679 });
   const colyseusClient = new ColyseusClient("ws://localhost:12679");
   const client = createClient(colyseusClient);
 

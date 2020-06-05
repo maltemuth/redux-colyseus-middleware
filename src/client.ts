@@ -64,7 +64,8 @@ const createClient = (remote: ColyseusClient): Client => {
   const unsetRoom = () => (currentRoom = null);
 
   return {
-    connect: (roomName: string) => remote.joinOrCreate(roomName).then(setRoom),
+    connect: (roomName: string) =>
+      remote.joinOrCreate(roomName, { foo: "bar" }).then(setRoom),
     disconnect: () =>
       new Promise((resolve) => {
         if (currentRoom !== null) {
