@@ -14,29 +14,57 @@ import { Client } from "./createClient";
 
 export const REMOTE_STATE_UPDATE = "REMOTE_STATE_UPDATE";
 
-interface RemoteAction<StateModel> extends Action {
+interface RemoteStateUpdateAction<StateModel> extends Action {
   type: typeof REMOTE_STATE_UPDATE;
   newState: StateModel;
 }
+
+export type RemoteStatePatcher<StateModel, RemoteStateModel> = (
+  localState: StateModel,
+  remoteState: RemoteStateModel
+) => StateModel;
+export type ReducerMapper = <
+  StateModel,
+  RemoteStateModel,
+  ActionType extends Action
+>(
+  originalReducer: Reducer<StateModel>,
+  patchLocalStateWithRemote: RemoteStatePatcher<StateModel, RemoteStateModel>
+) => Reducer<
+  StateModel,
+  ActionType | RemoteStateUpdateAction<RemoteStateModel>
+>;
 
 /**
  * returns a reducer that wraps the original reducer and handles top-level remote updates
  * @param originalReducer
  */
-const withRemoteRootReducer: <StateModel>(
-  orignalReducer: Reducer<StateModel>
-) => Reducer<StateModel> = (originalReducer: Reducer) => <StateModel>(
-  state: StateModel,
-  action: RemoteAction<StateModel> | AnyAction
+const withRemoteRootReducer: ReducerMapper = <
+  StateModel,
+  RemoteStateModel,
+  ActionType extends Action
+>(
+  originalReducer: Reducer<StateModel, ActionType>,
+  patchLocalStateWithRemote: RemoteStatePatcher<StateModel, RemoteStateModel>
 ) => {
-  const { type } = action;
-  if (type === REMOTE_STATE_UPDATE) {
-    const { newState } = action;
+  const wrappedReducer: Reducer<
+    StateModel,
+    ActionType | RemoteStateUpdateAction<RemoteStateModel>
+  > = (
+    state: StateModel | undefined,
+    action: RemoteStateUpdateAction<RemoteStateModel> | AnyAction
+  ) => {
+    const { type } = action;
+    if (type === REMOTE_STATE_UPDATE) {
+      const { newState } = action as RemoteStateUpdateAction<RemoteStateModel>;
 
-    return newState;
-  }
+      if (state) return patchLocalStateWithRemote(state, newState);
+    }
 
-  return originalReducer(state, action);
+    return originalReducer(state, action as ActionType);
+  };
+
+  return wrappedReducer;
 };
 
 /**
@@ -66,13 +94,17 @@ const createRemoteDispatcherMiddleWare = (client: Client): Middleware => (
  * @param reducer
  * @param middlewares
  */
-const createConnectedStore = <StateModel = any>(
+const createConnectedStore = <StateModel = any, RemoteStateModel = any>(
   client: Client,
   reducer: Reducer<StateModel>,
-  middlewares: Middleware[] = []
+  middlewares: Middleware[] = [],
+  patchLocalStateWithRemote: RemoteStatePatcher<
+    StateModel,
+    RemoteStateModel
+  > = (_) => _
 ): Store<StateModel> => {
   return createStore(
-    withRemoteRootReducer(reducer),
+    withRemoteRootReducer(reducer, patchLocalStateWithRemote),
     applyMiddleware(createRemoteDispatcherMiddleWare(client), ...middlewares)
   );
 };
