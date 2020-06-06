@@ -4,6 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
+    "@colyseus/schema": "^0.5.39",
     "colyseus": "^0.13.7",
     "colyseus.js": "^0.13.1",
     "typescript": "^3.9.3"

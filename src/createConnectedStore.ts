@@ -55,10 +55,13 @@ const withRemoteRootReducer: ReducerMapper = <
     action: RemoteStateUpdateAction<RemoteStateModel> | AnyAction
   ) => {
     const { type } = action;
+
     if (type === REMOTE_STATE_UPDATE) {
       const { newState } = action as RemoteStateUpdateAction<RemoteStateModel>;
 
-      if (state) return patchLocalStateWithRemote(state, newState);
+      if (typeof state !== "undefined") {
+        return patchLocalStateWithRemote(state, newState);
+      }
     }
 
     return originalReducer(state, action as ActionType);
@@ -101,7 +104,7 @@ const createConnectedStore = <StateModel = any, RemoteStateModel = any>(
   patchLocalStateWithRemote: RemoteStatePatcher<
     StateModel,
     RemoteStateModel
-  > = (_) => _
+  > = (_, __) => (__ as unknown) as StateModel
 ): Store<StateModel> => {
   return createStore(
     withRemoteRootReducer(reducer, patchLocalStateWithRemote),

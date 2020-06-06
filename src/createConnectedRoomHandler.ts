@@ -1,4 +1,5 @@
 import { Room } from "colyseus";
+import { Schema } from "@colyseus/schema";
 import { Store, AnyAction, Action, createStore } from "redux";
 
 export type StoreFactory<
@@ -7,7 +8,7 @@ export type StoreFactory<
 > = () => Store<StateModel, ActionType>;
 
 export class ConnectedRoom<
-  StateModel = any,
+  StateModel extends Schema,
   ActionType extends Action<any> = AnyAction
 > extends Room<StateModel> {
   public createStore: StoreFactory<StateModel, ActionType> = () =>
@@ -27,7 +28,10 @@ export class ConnectedRoom<
   }
 }
 
-const createConnectedRoomHandler = <StateModel, ActionType extends Action<any>>(
+const createConnectedRoomHandler = <
+  StateModel extends Schema,
+  ActionType extends Action<any>
+>(
   storeFactory: StoreFactory<StateModel, ActionType>
 ): { new (): ConnectedRoom<StateModel, ActionType> } =>
   class extends ConnectedRoom<StateModel, ActionType> {
